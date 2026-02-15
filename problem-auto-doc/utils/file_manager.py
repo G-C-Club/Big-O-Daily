@@ -51,11 +51,6 @@ def generate_english_markdown(data):
         if 'memory' in info:
             md += f"| **💾 Memory Limit** | {info['memory']} |\n"
         
-        # Add any other header info that might exist
-        for key, value in info.items():
-            if key not in ['time', 'memory']:
-                md += f"| **🔹 {key.capitalize()}** | {value} |\n"
-
     # Add standard header info (Time/Memory) to the table
     if 'header_info' in data:
         for key, value in data['header_info'].items():
@@ -129,12 +124,12 @@ def generate_persian_markdown(data):
         # GitHub Badge
         if author_name != "Unknown" and data['author'].get('github'):
             gh_user = data['author']['github'].split('/')[-1]
-            author_badges.append(f"[![گیت‌هاب](https://img.shields.io/badge/گیت‌هاب-181717?style=flat&logo=github&logoColor=white)](https://github.com/{gh_user})")
+            author_badges.append(f"[![Github](https://img.shields.io/badge/‌GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/{gh_user})")
         
         # Telegram Badge
         if data['author'].get('telegram'):
             tg_user = data['author']['telegram'].replace('@', '')
-            author_badges.append(f"[![تلگرام](https://img.shields.io/badge/تلگرام-26A5E4?style=flat&logo=telegram&logoColor=white)](https://t.me/{tg_user})")
+            author_badges.append(f"[![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=flat&logo=telegram&logoColor=white)](https://t.me/{tg_user})")
 
         # Combine for Persian Table
         author_cell = f"**{author_name}**"
