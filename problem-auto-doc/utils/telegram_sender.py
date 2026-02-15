@@ -24,7 +24,15 @@ def format_telegram_message(data, day_num, github_url):
     # 1. Basic Info
     message = f"📅 **Day {day_num:04d}**\n"
     message += f"❓ **Problem:** [{title}]({link})\n\n"
-    
+    if 'author' in data:
+        author_info = data['author']
+        message += f"✍️ **Author:** [{author_info['name']}]({author_info['github']})"
+        
+        if author_info['telegram']:
+            tg_link = f"https://t.me/{author_info['telegram']}"
+            message += f" | [📱 Telegram]({tg_link})"
+        message += "\n\n"
+
     # 2. Details Section
     message += "```⚙️ Details\n"
     message += f"Time   : {header.get('time', 'N/A')}\n"
