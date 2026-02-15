@@ -20,6 +20,7 @@ def format_telegram_message(data, day_num, github_url):
     title = data.get('title', 'Unknown Problem')
     link = data.get('link', '#')
     header = data.get('header_info', {})
+    channel_id = os.getenv("TELEGRAM_CHANNEL_ID", "@Big_O_Daily")
     
     # 1. Basic Info (HTML Style)
     message = f"📅 <b>Day {day_num:04d}</b>\n"
@@ -42,26 +43,34 @@ def format_telegram_message(data, day_num, github_url):
     # 3. Tags Section
     if data.get('tags'):
         tags = " ".join([f"#{tag.replace(' ', '_').replace('*', '')}" for tag in data['tags']])
-        message += f"<code>Tags: {tags}</code>\n\n"
+        message += f"<pre>Tags: {tags}</pre>\n\n"
     
     # 4. Description
-    message += f"<b>📖 Description</b>\n<pre>{data.get('statement', '')[:500]}...</pre>\n\n"
-    
+    message += f"<b>📖 Description</b>\n{data.get('statement', '')[:500]}...\n\n"
+
+    if data.get('input_spec'):
+        message += f"<b>📥 Input Specification</b>\n{data.get('input_spec')}\n\n"
+        
+    if data.get('output_spec'):
+        message += f"<b>📤 Output Specification</b>\n{data.get('output_spec')}\n\n"
+        
     # 5. Samples
     message += "🧪 <b>Example:</b>\n"
     for i, sample in enumerate(data.get('samples', [])[:2]):
         message += f"<pre>Input {i+1}:\n{sample['input']}\n\nOutput {i+1}:\n{sample['output']}</pre>\n"
-    
-    # 6. Your Custom Text (The part you requested)
-    message += "\n💡 <b>در بخش کامنت‌ها، ایده‌هاتون رو برای حل این سوال بنویسید!</b>\n"
-    
-    # 7. Footer & Links
+
+    # 6. Footer & Links
     clean_title = title.replace('/', '-').replace('\\', '-')
     problem_github_link = f"{github_url}/tree/main/problems/Day{day_num:04d}%20-%20{clean_title.replace(' ', '%20')}"
     
     message += f"\n🔗 <a href='{problem_github_link}'>View on GitHub</a>"
     message += f"\n📂 <a href='{github_url}'>Full Repository</a>"
     
+    # 7. Your Custom Text
+    message += "\n💡 <b>Share your ideas for solving this problem in the comments!</b>\n"
+
+    # 8. Channel Link
+    message += f"\n\n🧠 <b>Join us:</b> {channel_id}"
     return message
 
 def send_to_telegram(message):

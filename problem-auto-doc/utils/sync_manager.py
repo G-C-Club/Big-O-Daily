@@ -22,24 +22,44 @@ def get_project_paths():
         "problems": os.path.join(repo_root, "problems") # Problems folder is in Repo Root
     }
 def update_database(new_entry):
-    """Add a new problem entry to the JSON database."""
-    paths = get_project_paths()
-    data = []
-    
-    if os.path.exists(paths["db"]):
-        with open(paths["db"], "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = []
+    """
+    Updates the problems_db.json file with a new problem entry.
+    Each entry now includes a direct GitHub link to the folder.
+    """
+    bot_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_dir = os.path.join(bot_folder, "data")
+    db_path = os.path.join(data_dir, "problems_db.json")
 
-    # Prevent duplicate entries based on the folder path
-    if not any(item['folder_path'] == new_entry['folder_path'] for item in data):
-        data.append(new_entry)
-        with open(paths["db"], "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        return True
-    return False
+    # Ensure data directory exists
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    # Load existing database
+    db = []
+    if os.path.exists(db_path):
+        with open(db_path, "r", encoding="utf-8") as f:
+            try:
+                db = json.load(f)
+            except json.JSONDecodeError:
+                db = []
+
+    # Get Repo URL from Environment (default if not set)
+    github_repo = os.getenv("GITHUB_REPO_URL", "https://github.com/G-C-Club/Big-O-Daily")
+    
+    # Create the link to the specific problem folder
+    # We clean the folder name for URL safety
+    folder_name = new_entry['folder_path'].split('/')[-1]
+    folder_url = f"{github_repo}/tree/main/problems/{folder_name.replace(' ', '%20')}"
+    
+    # Add the folder link to the entry
+    new_entry['folder_link'] = folder_url
+
+    # Add new entry and save
+    db.append(new_entry)
+    with open(db_path, "w", encoding="utf-8") as f:
+        json.dump(db, f, indent=4, ensure_ascii=False)
+    
+    return True
 
 def generate_leaderboard(data):
     """Generate leaderboard based on problem count and total score with badges."""
@@ -81,15 +101,16 @@ def generate_leaderboard(data):
 def generate_problems_table(data):
     """Generate the comprehensive list of all solved problems."""
     md = "## 📚 All Problems\n\n"
-    md += "| # | Title | Author | Difficulty | Platform | Tags | Link |\n"
-    md += "| :--- | :--- | :--- | :---: | :---: | :--- | :---: |\n"
+    md += "| # | Title | Author | Difficulty | Platform | Tags | Link | Folder |\n"
+    md += "| :--- | :--- | :--- | :---: | :---: | :--- | :---: | :---: |\n"
 
     for idx, item in enumerate(data, 1):
         title_link = f"[{item['title']}]({item['folder_path']})"
         author_link = f"[{item['author']['name']}]({item['author']['github']})"
         tags = " ".join([f"`{t}`" for t in item.get('tags', [])])
+        folder_link = f"[📂 View]({item['folder_path']})"
         
-        md += f"| {idx} | {title_link} | {author_link} | {item['difficulty']} | {item['platform']} | {tags} | [🔗]({item['link']}) |\n"
+        md += f"| {idx} | {title_link} | {author_link} | {item['difficulty']} | {item['platform']} | {tags} | [🔗]({item['link']}) | {folder_link} |\n"
     
     return md
 
