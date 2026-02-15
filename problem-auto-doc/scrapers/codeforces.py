@@ -53,7 +53,14 @@ class CodeforcesScraper(BaseScraper):
 
                     header = problem_statement.find("div", class_="header")
                     if header:
-                        result['title'] = header.find("div", class_="title").get_text(strip=True)
+                        # Extract raw title
+                        raw_title = header.find("div", class_="title").get_text(strip=True)
+                        
+                        # --- FIX: Remove leading single letter and dot (e.g., "H. Title" -> "Title") ---
+                        # Matches a single capital letter followed by a dot and optional spaces at start
+                        clean_title = re.sub(r'^[A-Z]\.\s*', '', raw_title)
+                        result['title'] = clean_title
+
                         time_limit = header.find("div", class_="time-limit")
                         if time_limit:
                             result['header_info']['time'] = list(time_limit.stripped_strings)[1]

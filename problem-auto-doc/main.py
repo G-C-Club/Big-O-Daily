@@ -9,17 +9,14 @@ from utils.git_manager import check_git_connection, git_commit_and_push
 from utils.sync_manager import update_database, sync_main_readme
 
 def get_author_info():
-    """Handles user selection and management from the data/users.json inside the bot folder."""
-    # current_dir is problem-auto-doc/
+    """Handles user selection and management from the data/users.json."""
     bot_folder = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.join(bot_folder, "data")
     users_path = os.path.join(data_dir, "users.json")
     
-    # Ensure data directory exists inside problem-auto-doc
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    # Load existing users or create empty dict
     users = {}
     if os.path.exists(users_path):
         with open(users_path, "r", encoding="utf-8") as f:
@@ -39,10 +36,9 @@ def get_author_info():
         print(f"✅ Logged in as: {users[choice]['name']}")
         return users[choice]
     else:
-        # Logic for adding a new user with Title Case formatting
         print("\n➕ Adding New User:")
         name = input("👤 Name: ").strip().title() 
-        github = input("🐙 GitHub URL: ").strip()
+        github = input("👤 GitHub URL: ").strip()
         telegram = input("✈️ Telegram ID (without @): ").strip()
         
         new_info = {"name": name, "github": github, "telegram": telegram}
@@ -65,24 +61,22 @@ def main():
     tg_ok = check_telegram_connection()
     git_ok = check_git_connection()
 
-    if tg_ok and git_ok:
-        print("✅ Connections checked successfully.")
-    else:
+    if not (tg_ok and git_ok):
         if not tg_ok: print("❌ CONNECTION ERROR: Telegram is unreachable.")
         if not git_ok: print("❌ CONNECTION ERROR: Git remote 'origin' not found.")
         print("⚠️ Process aborted to save API credits.")
         return
+    print("✅ Connections checked successfully.")
 
     # --- STEP 2: Path Management ---
     bot_folder = os.path.dirname(os.path.abspath(__file__))
-    repo_root = os.path.dirname(bot_folder) # Parent of problem-auto-doc
+    repo_root = os.path.dirname(bot_folder) 
     problems_path = os.path.join(repo_root, "problems")
 
-    # --- STEP 3: Input and User Selection ---
+    # --- STEP 3: Scraper Setup ---
     url = input("\n🔗 Enter Problem URL: ").strip()
     author_data = get_author_info()
 
-    # --- STEP 4: Scraping ---
     if "codeforces.com" in url:
         scraper = CodeforcesScraper(url)
     elif "leetcode.com" in url:
@@ -96,12 +90,17 @@ def main():
     if not data or "error" in data:
         print("❌ Error: Scraping failed.")
         return
-
-    # Attach author data
     data['author'] = author_data
 
-    # --- STEP 5: AI Translation ---
-    print("🤖 Preparing Persian content via AI...")
+    # --- STEP 4: Prepare Telegram Content (English) ---
+    # We do this BEFORE translation to keep the message in English
+    day_num = get_next_day_number(problems_path)
+    github_repo = os.getenv("GITHUB_REPO_URL", "https://github.com/G-C-Club/Big-O-Daily")
+    tg_message = format_telegram_message(data, day_num, github_repo)
+    print("✅ English Telegram message prepared.")
+
+    # --- STEP 5: AI Translation (For Persian README) ---
+    print("🤖 Translating content for Persian README...")
     translator = AITranslator()
     try:
         translated_data = translator.translate_sections(data)
@@ -109,13 +108,10 @@ def main():
         print(f"❌ Translation failed: {e}")
         return
 
-    # --- STEP 6: Folder Management ---
-    day_num = get_next_day_number(problems_path)
+    # --- STEP 6: Folder & Local File Management ---
     clean_title = data['title'].replace('/', '-').replace('\\', '-')
     folder_name = f"Day{day_num:04d} - {clean_title}"
     target_dir = os.path.join(problems_path, folder_name)
-
-    # --- STEP 7: Save Local Markdown Files ---
     os.makedirs(target_dir, exist_ok=True)
     
     english_md = generate_english_markdown(data)
@@ -128,8 +124,7 @@ def main():
     
     print(f"✅ Local files saved for Day {day_num:04d}")
 
-    # --- STEP 8: Sync Global Database and Leaderboard ---
-    print("📊 Updating database/data/database.json and Main README...")
+    # --- STEP 7: Sync Database ---
     problem_entry = {
         "title": data['title'],
         "folder_path": f"./problems/{folder_name}",
@@ -143,16 +138,14 @@ def main():
     if update_database(problem_entry):
         sync_main_readme()
 
-    # --- STEP 9: Final Confirmation for Publishing ---
+    # --- STEP 8: Final Publishing ---
     choice = input(f"\n🚀 Ready to publish Day {day_num:04d}. Commit and post? (y/n): ").strip().lower()
     
     if choice == 'y':
-        # Post to Telegram
-        github_repo = os.getenv("GITHUB_REPO_URL", "https://github.com/G-C-Club/Big-O-Daily")
-        tg_message = format_telegram_message(translated_data, day_num, github_repo)
+        # Send the previously prepared English message
         send_to_telegram(tg_message)
         
-        # Push to GitHub
+        # Git operations
         if git_commit_and_push(day_num, data['title']):
             print("\n✨ All tasks completed successfully!")
         else:

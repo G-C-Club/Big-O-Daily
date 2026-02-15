@@ -50,11 +50,6 @@ def generate_english_markdown(data):
         # Adding Memory Limit with chip emoji
         if 'memory' in info:
             md += f"| **💾 Memory Limit** | {info['memory']} |\n"
-        
-    # Add standard header info (Time/Memory) to the table
-    if 'header_info' in data:
-        for key, value in data['header_info'].items():
-            md += f"| **{key.capitalize()}** | {value} |\n"
     
     # Include tags as a row in the same table
     if data.get('tags'):
@@ -145,11 +140,6 @@ def generate_persian_markdown(data):
             md += f"| **⏱️ محدودیت زمان** | {info['time']} |\n"
         if 'memory' in info:
             md += f"| **💾 محدودیت حافظه** | {info['memory']} |\n"
-        
-        for key, value in info.items():
-            if key not in ['time', 'memory']:
-                md += f"| **🔹 {key}** | {value} |\n"
-    
     
     if 'header_info' in data:
         for key, value in data['header_info'].items():
@@ -195,7 +185,7 @@ def generate_persian_markdown(data):
         md += f"{data.get('note', '')}\n\n"
 
     md += "---\n"
-    md += "*توجه: این صورت سوال‌ توسط ربات دریافت و ترجمه شده است.*"
+    md += "*توجه: این سوال‌ توسط ربات دریافت و ترجمه شده است.*"
     md += "\n\n</div>\n"
 
     return md
