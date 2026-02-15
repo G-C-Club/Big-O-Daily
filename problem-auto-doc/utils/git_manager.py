@@ -21,15 +21,10 @@ def git_commit_and_push(day_num, problem_title):
     try:
         commit_message = f"Add Day {day_num:04d}: {problem_title}"
         
-        # Uses '-C ..' to tell Git to operate on the parent directory (the root of your repo)
-        # Adds all changes in the parent repository
         subprocess.run(["git", "-C", "..", "add", "."], check=True)
-        
-        # Commits the changes with a formatted message
         subprocess.run(["git", "-C", "..", "commit", "-m", commit_message], check=True)
         
-        # Pushes the local commits to the remote repository
-        subprocess.run(["git", "-C", "..", "push"], check=True)
+        subprocess.run(["git", "-C", "..", "push", "origin", "main"], check=True)
         return True
     except Exception as e:
         print(f"❌ Git Error: {e}")
