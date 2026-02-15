@@ -16,7 +16,6 @@ class CodeforcesScraper(BaseScraper):
         # ========================================================
         # 🔧 PROXY SETTINGS (SOCKS5 Fixed)
         # ========================================================
-        # پورت 2080 معمولاً ساکس است، پس باید بگوییم socks5
         PROXY_URL = "socks5://127.0.0.1:2080"
         
         proxies = {
@@ -99,13 +98,30 @@ class CodeforcesScraper(BaseScraper):
                     
                     full_statement = "\n\n".join(main_text_parts)
                     result['statement'] = self._final_clean(full_statement)
-
+                    
                     print("   -> ✅ Scraping Complete!")
             else:
                 print(f"   -> ❌ Failed with Status Code: {response.status_code}")
-
         except Exception as e:
             print(f"   -> ❌ Error: {e}")
+
+        # Find tags in the sidebar
+        sidebar_tags = soup.find_all("span", class_="tag-box")
+        raw_tags = [t.text.strip() for t in sidebar_tags]
+
+        # Filter tags and extract difficulty (e.g., *800)
+        actual_tags = []
+        difficulty = "Unknown"
+
+        for tag in raw_tags:
+            # Check if tag starts with '*' followed by a number
+            if tag.startswith('*') and tag[1:].isdigit():
+                difficulty = tag[1:] # Store as numerical difficulty
+            else:
+                actual_tags.append(tag)
+
+        result['tags'] = actual_tags
+        result['difficulty'] = difficulty
 
         return result
 

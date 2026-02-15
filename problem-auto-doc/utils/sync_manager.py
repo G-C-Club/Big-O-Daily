@@ -42,22 +42,39 @@ def update_database(new_entry):
     return False
 
 def generate_leaderboard(data):
-    """Generate the leaderboard table based on the number of solved problems."""
-    authors_count = Counter(item['author']['name'] for item in data)
-    # Sort: highest number of solved problems at the top
-    sorted_authors = sorted(authors_count.items(), key=lambda x: x[1], reverse=True)
+    """Generate leaderboard based on problem count and total score with badges."""
+    stats = {}
+    for item in data:
+        name = item['author']['name']
+        diff = item.get('difficulty', '0')
+        score = int(diff) if diff.isdigit() else 0
+        
+        if name not in stats:
+            stats[name] = {'count': 0, 'score': 0, 'auth': item['author']}
+        
+        stats[name]['count'] += 1
+        stats[name]['score'] += score
+
+    # Sort by total score (descending)
+    sorted_authors = sorted(stats.items(), key=lambda x: x[1]['score'], reverse=True)
 
     md = "## 🏆 Leaderboard\n\n"
-    md += "| Rank | Author | Solved Problems | Profile |\n"
-    md += "| :--- | :--- | :---: | :--- |\n"
+    md += "| Rank | Author | Solved | Score | Profile |\n"
+    md += "| :--- | :--- | :---: | :---: | :--- |\n"
 
-    for rank, (name, count) in enumerate(sorted_authors, 1):
-        # Find the first record of the author to extract profile links
-        auth_info = next(item['author'] for item in data if item['author']['name'] == name)
-        github_link = f"[🐙]({auth_info['github']})"
-        tg_link = f" [✈️](https://t.me/{auth_info['telegram']})" if auth_info.get('telegram') else ""
+    for rank, (name, info) in enumerate(sorted_authors, 1):
+        # Generate GitHub Badge
+        github_user = info['auth']['github'].strip('/').split('/')[-1]
+        github_badge = f"[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/{github_user})"
         
-        md += f"| {rank} | **{name}** | {count} | {github_link}{tg_link} |\n"
+        # Generate Telegram Badge if available
+        profile_badges = github_badge
+        if info['auth'].get('telegram'):
+            tg_user = info['auth']['telegram'].replace('@', '')
+            tg_badge = f" [![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=flat&logo=telegram&logoColor=white)](https://t.me/{tg_user})"
+            profile_badges += tg_badge
+            
+        md += f"| {rank} | **{name}** | {info['count']} | {info['score']} | {profile_badges} |\n"
     
     return md
 
