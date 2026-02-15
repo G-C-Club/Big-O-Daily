@@ -36,5 +36,21 @@
             "telegram": "javadabdolahi"
         },
         "folder_link": "https://github.com/G-C-Club/Big-O-Daily/tree/main/problems/Day0002%20-%20Game%20with%20a%20Fraction"
+    },
+    {
+        "title": "Seats",
+        "folder_path": "./problems/Day0003 - Seats",
+        "link": "https://codeforces.com/problemset/problem/2188/B",
+        "difficulty": "1000",
+        "platform": "Codeforces",
+        "tags": [
+            "greedy"
+        ],
+        "author": {
+            "name": "Javad Abdolahi",
+            "github": "https://github.com/JavadAbdollahi/",
+            "telegram": "javadabdolahi"
+        },
+        "folder_link": "https://github.com/G-C-Club/Big-O-Daily/tree/main/problems/Day0003%20-%20Seats"
     }
 ]

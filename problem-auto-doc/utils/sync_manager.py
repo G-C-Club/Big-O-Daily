@@ -17,7 +17,7 @@ def get_project_paths():
         os.makedirs(data_folder)
         
     return {
-        "db": os.path.join(data_folder, "database.json"),
+        "db": os.path.join(data_folder, "problems_db.json"),
         "readme": os.path.join(repo_root, "README.md"), # Main README is in Repo Root
         "problems": os.path.join(repo_root, "problems") # Problems folder is in Repo Root
     }
