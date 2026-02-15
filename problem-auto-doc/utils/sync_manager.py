@@ -101,16 +101,16 @@ def generate_leaderboard(data):
 def generate_problems_table(data):
     """Generate the comprehensive list of all solved problems."""
     md = "## 📚 All Problems\n\n"
-    md += "| # | Title | Author | Difficulty | Platform | Tags | Link | Folder |\n"
+    md += "| # | Title | Author | Score | Platform | Tags | Link | Folder |\n"
     md += "| :--- | :--- | :--- | :---: | :---: | :--- | :---: | :---: |\n"
 
     for idx, item in enumerate(data, 1):
         title_link = f"[{item['title']}]({item['folder_path']})"
         author_link = f"[{item['author']['name']}]({item['author']['github']})"
         tags = " ".join([f"`{t}`" for t in item.get('tags', [])])
-        folder_link = f"[📂 View]({item['folder_path']})"
+        folder_link = f"https://github.com/G-C-Club/Big-O-Daily/tree/main{item['folder_path'][1:]}"
         
-        md += f"| {idx} | {title_link} | {author_link} | {item['difficulty']} | {item['platform']} | {tags} | [🔗]({item['link']}) | {folder_link} |\n"
+        md += f"| {idx} | {title_link} | {author_link} | {item['difficulty']} | {item['platform']} | {tags} | [🔗]({item['link']}) | [📂]({folder_link}) |\n"
     
     return md
 

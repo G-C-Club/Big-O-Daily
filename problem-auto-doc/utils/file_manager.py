@@ -41,6 +41,10 @@ def generate_english_markdown(data):
             
         md += f"| **👨‍💻 Author** | {author_cell} |\n"
 
+    # Add Difficulty row
+    difficulty = data.get('difficulty', 'Unknown')
+    md += f"| **📊 Score** | {difficulty} |\n"
+    
     # --- Add Technical Details (Time/Memory) with Emojis ---
     if 'header_info' in data:
         info = data['header_info']
@@ -133,6 +137,11 @@ def generate_persian_markdown(data):
             
         md += f"| **👨‍💻 نویسنده** | {author_cell} |\n"
 
+
+    # Add Difficulty row
+    difficulty = data.get('difficulty', 'Unknown')
+    md += f"| **📊 امتیاز** | {difficulty} |\n"
+    
     # --- Add Technical Details with Persian Labels and Emojis ---
     if 'header_info' in data:
         info = data['header_info']
@@ -140,12 +149,6 @@ def generate_persian_markdown(data):
             md += f"| **⏱️ محدودیت زمان** | {info['time']} |\n"
         if 'memory' in info:
             md += f"| **💾 محدودیت حافظه** | {info['memory']} |\n"
-    
-    if 'header_info' in data:
-        for key, value in data['header_info'].items():
-            # Translate common headers for a better Persian UI
-            translated_key = "زمان" if key.lower() == "time" else "حافظه" if key.lower() == "memory" else key.capitalize()
-            md += f"| **{translated_key}** | {value} |\n"
     
     if data.get('tags'):
         tags_str = ", ".join([f"`{tag}`" for tag in data['tags']])
